@@ -1,0 +1,294 @@
+#+title: EMACS INITIALIZATION
+#+startup: overview
+
+* INITIALIZATION AND INTERPORABILITY
+** Very basic setup
+#+begin_src emacs-lisp :results none
+  ;; Create another .el file for auto-customizations
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+  (when (file-exists-p custom-file) (load custom-file))
+
+  (setq inhibit-startup-message t)
+
+  (setq visible-bell t)
+
+  ;; Initialize package sources
+  (require 'package)
+
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+  			   ("org" . "https://orgmode.org/elpa/")
+  			   ("elpa" . "https://elpa.gnu.org/packages/")))
+
+  (package-initialize)
+  (unless package-archive-contents
+    (package-refresh-contents))
+
+  (unless (package-installed-p 'use-package)
+    (package-install 'use-package))
+
+  (setq use-package-always-ensure t)
+
+  (use-package command-log-mode)
+
+  (setq default-directory "~/")
+
+  (prefer-coding-system 'utf-8)
+  (set-language-environment "UTF-8")
+  (set-default-coding-systems 'utf-8)
+  (setq buffer-file-coding-system 'utf-8)
+
+  (setq confirm-kill-emacs 'y-or-n-p)
+  #+end_src
+ 
+** Interoperability
+#+begin_src emacs-lisp :results none
+  (use-package swiper)
+
+  (use-package ivy
+    :diminish
+    :bind (("C-s" . swiper)
+	   :map ivy-minibuffer-map
+	   ("TAB" . ivy-alt-done)
+	   ("RET" . ivy-alt-done)
+	   ("C-l" . ivy-alt-done)
+	   ("C-j" . ivy-next-line)
+	   ("C-k" . ivy-previous-line)
+	   :map ivy-switch-buffer-map
+	   ("C-k" . ivy-previous-line)
+	   ("C-l" . ivy-done)
+	   ("C-d" . ivy-switch-buffer-kill)
+	   :map ivy-reverse-i-search-map
+	   ("C-k" . ivy-previous-line)
+	   ("C-d" . ivy-reverse-i-search-kill))
+    :config
+    (ivy-mode 1))
+
+  (use-package which-key
+    :init (which-key-mode)
+    :diminish which-key-mode
+    :config
+    (setq which-key-idle-delay 0.5)
+    (which-key-setup-minibuffer))
+
+  (use-package ivy-rich
+    :init (ivy-rich-mode 1))
+
+  (use-package counsel
+    :bind (("M-x" . counsel-M-x)
+	   ("C-x b" . counsel-ibuffer)
+	   ("C-x C-f" . counsel-find-file)
+	   :map minibuffer-local-map
+	   ("C-r" . 'counsel-minibuffer-history))
+    :config
+    (setq ivy-initial-inputs-alist nil))
+
+  (use-package helpful
+    :custom
+    (counsel-describe-function-function #'helpful-callable)
+    (counsel-describe-variable-function #'helpful-variable)
+    :bind
+    ([remap describe-function] . counsel-describe-function)
+    ([remap describe-command] . helpful-command)
+    ([remap describe-variable] . counsel-describe-variable)
+    ([remap describe-key] . helpful-key))
+
+  (add-to-list 'display-buffer-alist
+	       '("*Help*" display-buffer-below-selected))
+#+end_src
+
+** Shell config
+#+begin_src emacs-lisp :results none
+  (setq-default comint-prompt-read-only t)
+#+end_src
+* VISUALS
+** Basic Visuals                                                       
+#+begin_src emacs-lisp :results none
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+  (tooltip-mode -1)
+  (menu-bar-mode -1)
+  (set-fringe-mode 10) ;; Breathing room at the edges
+
+  (column-number-mode)
+  (global-display-line-numbers-mode t)
+
+  (dolist (mode '(org-mode-hook
+		  term-mode-hook
+		  eshell-mode-hook
+		  jupyter-repl-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+#+end_src
+
+** Theme Setup
+#+begin_src emacs-lisp :results none
+  (load-theme 'wombat)
+#+end_src
+
+** Font Visuals
+#+begin_src emacs-lisp :results none
+  (set-face-attribute 'default nil :font "Fira Code" :height 110)
+#+end_src
+** Modeline Visuals                                                     
+#+begin_src emacs-lisp :results none
+  (use-package doom-modeline
+    :ensure t
+    :init (doom-modeline-mode 1)
+    :custom ((doom-modeline-height 45)))
+#+end_src
+
+** Solaire mode
+#+begin_src emacs-lisp :results none
+  (use-package solaire-mode
+    :ensure t
+    :hook (after-init . solaire-global-mode)
+    :config
+    (push '(treemacs-window-background-face . solaire-default-face) solaire-mode-remap-alist)
+    (push '(treemacs-hl-line-face .solaire-hl-line-face) solaire-mode-remap-alist))
+#+end_src
+
+** Golden Ratio
+#+begin_src emacs-lisp :results none
+  (use-package golden-ratio
+    :ensure t
+    :hook (after-init . golden-ratio-mode)
+    :custom (golden-ratio-exclude-modes '(occur-mode)))
+#+end_src
+* PROGRAMMING
+** Python setup
+#+begin_src emacs-lisp :results none
+  (require 'treesit)
+  (setq major-mode-remap-alist '((python-mode . python-ts-mode)))
+#+end_src
+** Conda environment setup
+#+begin_src emacs-lisp :results none
+(use-package conda)
+
+(setq conda-anaconda-home "c:/Users/RuneInglev/miniconda3/")
+(setq conda-env-home-directory "c:/Users/RuneInglev/miniconda3/")
+
+(setq-default mode-line-misc-info '(:exec conda-env-current-name))
+
+(conda-env-activate "rsp")
+#+end_src
+** Flycheck using pylint
+#+begin_src emacs-lisp :results none
+  (use-package flycheck)
+
+  (add-hook 'python-mode-hook
+	    (lambda ())
+	    (setq flycheck-python-pylint-executable (concat conda-env-current-path "Scripts/pylint")))
+
+  (global-flycheck-mode)
+#+end_src
+
+** Lisp rainbow delimiters
+#+begin_src emacs-lisp :results none
+  (use-package rainbow-delimiters
+    :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+
+** Tree-structure
+#+begin_src emacs-lisp :results none
+      (use-package treemacs
+	:ensure t
+	:bind ("M-b" . 'treemacs))
+#+end_src
+
+** Jupyter kernels
+#+begin_src emacs-lisp :results none
+  (use-package jupyter
+    :config
+    (setq jupyter-org-async-kernel nil
+          jupyter-repl-echo-eval-p t))
+
+  ;; Advice jupyter-run-repl to disable python-ts-mode remap for the duration
+  (advice-add 'jupyter-run-repl :around
+    (lambda (orig-fun &rest args)
+      ;; Remove python-mode remap temporarily
+      (let ((major-mode-remap-alist 
+             (assq-delete-all 'python-mode major-mode-remap-alist)))
+        (apply orig-fun args))))
+
+(with-eval-after-load 'jupyter-client
+  ;; build a syntax-table for python-ts-mode
+  (let ((py-ts-syn
+         (with-temp-buffer
+           (delay-mode-hooks (python-ts-mode))
+           (syntax-table))))
+    ;; override the cached mapping for 'python' → (major-mode . syntax-table)
+    (push (cons 'python (list 'python-ts-mode py-ts-syn))
+          jupyter-kernel-language-mode-properties)))
+#+end_src
+
+** Debug Mode (DAP-MODE)
+#+begin_src emacs-lisp :results none
+    ;; Enabling only some features
+    (setq dap-auto-configure-features '(sessions locals controls tooltip))
+
+    (require 'dap-python)
+    ;; if you installed debugpy, you need to set this
+    ;; https://github.com/emacs-lsp/dap-mode/issues/306
+    (setq dap-python-debugger 'debugpy)
+
+#+end_src
+* ChatGPT
+#+begin_src emacs-lisp :results none
+  (use-package gptel
+    :ensure t
+    :defer t
+    :config
+    ;; Existing GPTel config settings go here...
+
+    (defun my-gptel-python-directive ()
+      (if (eq major-mode 'python-mode)
+  	  "You are a large language model and a careful programmer. Provide code and only code as output without any additional text, prompt, or note. Never reproduce code that already exists. Keep it short, and do not return functions unless specifically asked to. Provide no explanations unless explicitly requested."
+  	"You are a large language model living in Emacs and a helpful assistant. Respond concisely."))
+
+    (add-to-list 'gptel-directives '(strict-python . my-gptel-python-directive))
+    (setf (alist-get 'default gptel-directives) #'my-gptel-python-directive))
+
+  (with-temp-buffer
+    (insert-file-contents "openaiapikey")
+    (setq gptel-api-key (buffer-string)))
+
+  (setq gptel-default-mode 'text-mode)
+
+  (global-set-key (kbd "C-c RET") 'gptel-send)
+  (global-set-key (kbd "C-c C-RET") 'gptel-menu)
+
+  (setq gptel--mode-description-alist
+  	'((js2-mode      . "Javascript")
+  	  (sh-mode       . "Shell")
+  	  (enh-ruby-mode . "Ruby")
+  	  (yaml-mode     . "Yaml")
+  	  (yaml-ts-mode  . "Yaml")
+  	  (rustic-mode   . "Rust")
+  	  (python-mode   . "Python")))
+
+  (cl-defun my/clean-up-gptel-refactored-code (beg end)
+    "Clean up the code responses for refactored code in the current buffer.
+
+      The response is placed between BEG and END.  The current buffer is
+      guaranteed to be the response buffer."
+    (when gptel-mode          ; Don't want this to happen in the dedicated buffer.
+      (cl-return-from my/clean-up-gptel-refactored-code))
+    (when (and beg end)
+      (save-excursion
+  	(let ((contents
+  	       (replace-regexp-in-string
+  		"\n*``.*\n*" ""
+  		(buffer-substring-no-properties beg end))))
+  	  (delete-region beg end)
+  	  (goto-char beg)
+  	  (insert contents))
+  	;; Indent the code to match the buffer indentation if it's messed up.
+  	(indent-region beg end)
+  	(pulse-momentary-highlight-region beg end))))
+
+  (add-hook 'gptel-post-response-functions #'my/clean-up-gptel-refactored-code)
+
+#+end_src
+* Writing
+#+begin_src emacs-lisp :results none
+  (load "~/.emacs.d/org-novelist.el")
+#+end_src
