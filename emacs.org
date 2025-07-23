@@ -163,8 +163,12 @@
 #+begin_src emacs-lisp :results none
 (use-package conda)
 
-(setq conda-anaconda-home "c:/Users/RuneInglev/miniconda3/")
-(setq conda-env-home-directory "c:/Users/RuneInglev/miniconda3/")
+(setq conda-anaconda-home
+      (or (getenv "CONDA_HOME")
+          "c:/Users/RuneInglev/miniconda3/"))
+(setq conda-env-home-directory
+      (or (getenv "CONDA_ENV_HOME")
+          "c:/Users/RuneInglev/miniconda3/"))
 
 (setq-default mode-line-misc-info '(:exec conda-env-current-name))
 

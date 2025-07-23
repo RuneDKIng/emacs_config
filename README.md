@@ -41,12 +41,19 @@ Place a plain text file called `openaiapikey` in your home directory (`~/`) cont
 
 ## Conda paths (optional)
 
-If you use Conda for Python, adjust the paths in `emacs.org` so Emacs can locate your installation:
+If you use Conda for Python, Emacs can read the install paths from the
+environment variables `CONDA_HOME` and `CONDA_ENV_HOME`.  If these are
+not set, adjust the paths in `emacs.org` so Emacs can locate your
+installation:
 
 ```elisp
-(setq conda-anaconda-home "c:/Users/RuneInglev/miniconda3/")
-(setq conda-env-home-directory "c:/Users/RuneInglev/miniconda3/")
+(setq conda-anaconda-home
+      (or (getenv "CONDA_HOME") "c:/Users/RuneInglev/miniconda3/"))
+(setq conda-env-home-directory
+      (or (getenv "CONDA_ENV_HOME") "c:/Users/RuneInglev/miniconda3/"))
 (conda-env-activate "rsp")
 ```
 
-Change these values to the location of your Conda installation and the environment you want activated.
+Change the default values to the location of your Conda installation
+and the environment you want activated if you do not use the
+environment variables.
