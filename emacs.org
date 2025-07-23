@@ -250,7 +250,7 @@
 
   (with-temp-buffer
     (insert-file-contents "openaiapikey")
-    (setq gptel-api-key (buffer-string)))
+    (setq gptel-api-key (string-trim (buffer-string))))
 
   (setq gptel-default-mode 'text-mode)
 
