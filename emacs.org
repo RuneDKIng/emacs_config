@@ -175,8 +175,9 @@
   (use-package flycheck)
 
   (add-hook 'python-mode-hook
-	    (lambda ())
-	    (setq flycheck-python-pylint-executable (concat conda-env-current-path "Scripts/pylint")))
+            (lambda ()
+              (setq flycheck-python-pylint-executable
+                    (concat conda-env-current-path "Scripts/pylint"))))
 
   (global-flycheck-mode)
 #+end_src
