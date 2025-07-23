@@ -1,2 +1,5 @@
 /.cache/
 /auto-save-list/
+openaiapikey
+custom.el
+*.elc
