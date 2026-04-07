@@ -1,0 +1,80 @@
+;;; runei-programming.el -*- lexical-binding: t; -*-
+
+(use-package magit
+  :bind (("C-x g" . magit-status))
+  :custom
+  (magit-save-repository-buffers 'dontask))
+
+(require 'treesit)
+(setq major-mode-remap-alist '((python-mode . python-ts-mode)))
+
+(use-package zmq
+  :straight (zmq :type git
+				 :host github
+				 :repo "nnicandro/emacs-zmq"
+				 :files ("*.el" "src" "Makefile" "*.so"))
+  :demand t)
+
+(use-package jupyter
+  :straight (jupyter :type git
+					 :host github
+					 :repo "emacs-jupyter/jupyter"
+					 :commit "242fdc709ce0faa3b9ee81dcc48cfd791898e6b8")
+  :after zmq)
+
+;; UV environment activation
+(defun runei/uv-activate (&optional project-root)
+  "Activate Python environment managed by uv.
+Looks for .venv directory in project root and activates the Python interpreter.
+When called interactively, activates the environment for the current project."
+  (interactive)
+  (let* ((project-root (or project-root (project-root (project-current t))))
+         (venv-path (and project-root (expand-file-name ".venv" project-root)))
+         (python-exe (and venv-path (expand-file-name "bin/python" venv-path))))
+    (if (and venv-path (file-exists-p python-exe))
+        (progn
+          ;; Set Python interpreter path
+          (setq python-shell-interpreter python-exe)
+          
+          ;; Update exec-path
+          (let ((venv-bin-dir (file-name-directory python-exe)))
+            (setq exec-path (cons venv-bin-dir (remove venv-bin-dir exec-path))))
+          
+          ;; Update environment variables
+		  (setenv "PROJECT_ROOT" project-root)
+          (setenv "VIRTUAL_ENV" venv-path)
+          (setenv "UV_VENV" venv-path)
+          (setenv "PATH" (concat (file-name-directory python-exe) ":" (getenv "PATH")))
+          (setenv "PYTHONHOME" nil)
+          
+          (message "Activated UV Python environment at %s" venv-path))
+      (message "No UV Python environment found in %s" (or project-root "current project")))))
+
+
+
+;; Make the main function interactive for manual activation
+(define-key global-map (kbd "C-c p a") #'runei/uv-activate)
+
+;; Add UV environment indicator to doom-modeline (proper way)
+(when (featurep 'doom-modeline)
+  ;; Define a custom segment for UV environment
+  (doom-modeline-def-segment uv-env
+    (format "🐍 %s" (or (runei/get-env-name) "X"))))
+
+;; Helper function to get a nice environment name
+(defun runei/get-env-name ()
+  "Extract a nice name for the environment.
+If env-path ends with '.venv', use the parent directory name.
+Otherwise use the directory name."
+  (let ((project-root (getenv "PROJECT_ROOT")))
+	(when project-root
+	  (file-name-nondirectory
+	   (directory-file-name
+		(file-name-directory project-root))))))
+  
+;; Add the UV environment segment after the major mode
+(doom-modeline-add-segment 'uv-env 'major-mode)
+
+(setq python-indent-offset 4)
+
+(provide 'runei-programming)
