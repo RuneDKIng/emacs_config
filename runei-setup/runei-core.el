@@ -22,11 +22,24 @@
   (setq explicit-shell-file-name "/bin/bash")
   (setq process-connection-type nil))
 
+;; Setup vterm
+(use-package vterm
+  :straight t
+  :ensure t
+  :config
+  (setq vterm-shel "/bin/bash")
+  (setq vterm-max-scrollback 10000)
+  (define-key vterm-mode-map (kbd "C-c C-k") 'vterm-kill-region)
+  )
+
 ;; Basic editing settings
 (global-auto-revert-mode 1)
 (setq-default tab-width 4)
 (save-place-mode 1)
 (savehist-mode 1)
 (recentf-mode 1)
+
+(setq auto-save-file-directory "~/.emacs.d/auto-save")
+(setq backup-directory-alist '((".*" . "~/.emacs.d/auto-backups")))
 
 (provide 'runei-core)

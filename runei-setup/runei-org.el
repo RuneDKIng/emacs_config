@@ -39,6 +39,14 @@
 	(setq org-enforce-todo-checkbox-dependencies t)
 	(setq org-hierarchical-todo-statistics nil)
 	(setq org-todo-keywords '("TODO" "DONE"))
+
+	(setq org-latex-pdf-process
+		  '("xelatex -interaction nonstopmode %f" "xelatex -interaction nonstopmode %f"))
+
+	(setq org-latex-compiler "xelatex")
+	(setq org-preview-latex-default-process 'xelatex)
+	(setq org-format-latex-options
+		  (plist-put org-format-latex-options :background "Transparent"))
 	)
 
 (provide 'runei-org)

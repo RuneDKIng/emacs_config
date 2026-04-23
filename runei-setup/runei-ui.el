@@ -10,12 +10,17 @@
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
   
 ;; 2) Select Theme
-(use-package soothe-theme
+(use-package doom-themes
   :ensure t
-  :init
-  (load-theme 'soothe t))
-
-(set-face-attribute 'default nil :background "#181818")
+  :custom
+  (doom-themes-enable-bold t)
+  (doom-themes-enable-italic t)
+  (doom-themes-treemacs-theme "doom-atom")
+  :config
+  (load-theme 'doom-homage-black t)
+  (doom-themes-visual-bell-config)
+  (doom-themes-neotree-config)
+  (doom-themes-treemacs-config))
 
 ;; 3) Modeline + icons
 ;; Note: Nerd Fonts should be installed manually for best results
@@ -36,8 +41,9 @@
 
 ;; 4) Font Family and Size
 (let ((font-family "AdwaitaMono")
-      (font-height 100))        ;; 120 = 12pt; adjust as you like
+	  (font-height 105) ;; 120 = 12pt; adjust as you like
+	  )        
   (set-face-attribute 'default nil :font font-family :height font-height)
-  (set-face-attribute 'fixed-pitch nil :family font-family :height font-height))
+  (set-face-attribute 'fixed-pitch nil :family font-family :height font-height)) 
 
 (provide 'runei-ui)
