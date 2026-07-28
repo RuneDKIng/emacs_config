@@ -25,6 +25,12 @@
 ;; Add runei-setup to load path
 (add-to-list 'load-path "~/.emacs.d/runei-setup/")
 
+(setq keyboard-translate-from-alist '((8 . 127)))
+(global-set-key (kbd "<backspace>") 'backward-delete-char-untabify)
+(global-set-key (kbd "DEL") 'backward-delete-char-untabify)
+
+(global-set-key (kbd "C-k") 'backward-delete-char-untabify)
+
 ;; Load modules
 (load "runei-core")
 (load "runei-ui")
@@ -32,5 +38,6 @@
 (load "runei-completion-ivy")
 (load "runei-programming")
 (load "runei-ai")
+(load "runei-eww")
 
 (provide 'init)

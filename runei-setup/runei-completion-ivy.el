@@ -5,7 +5,7 @@
   :bind (("C-s" . swiper)
          :map ivy-minibuffer-map
          ("TAB" . ivy-alt-done)
-         ("RET" . ivy-alt-done)
+		 ("RET" . ivy-alt-done)
          ("C-l" . ivy-alt-done)
          ("C-j" . ivy-next-line)
          ("C-k" . ivy-previous-line)
@@ -21,6 +21,8 @@
   (setq ivy-use-virtual-buffers t
 		ivy-count-format "%d/%d "
 		ivy-initial-inputs-alist nil))
+
+(define-key ivy-minibuffer-map (kbd "C-M-h") 'ivy-backward-delete-char)
 
 (use-package counsel
   :after ivy
@@ -64,5 +66,25 @@
   :config
   (ivy-prescient-mode 1)
   (prescient-persist-mode 1))
+
+(defun runei/describe-top-level-control-bindings ()
+  "Show top-level C-* bindings active in the current buffer."
+  (interactive)
+  (with-current-buffer (get-buffer-create "*Top-level C bindings*")
+    (let ((inhibit-read-only t))
+      (erase-buffer)
+      (insert (format "%-8s %s\n" "Key" "Binding"))
+      (insert (make-string 60 ?-) "\n")
+      (dotimes (i 26)
+        (let* ((char (+ ?a i))
+               (key (format "C-%c" char))
+               (binding (key-binding (kbd key) t)))
+          (insert (format "%-8s %s\n"
+                          key
+                          (or binding "unbound")))))
+      (special-mode))
+    (pop-to-buffer (current-buffer))))
+
+(global-set-key (kbd "C-h B") #'runei/describe-top-level-control-bindings)
 
 (provide 'runei-completion-ivy)

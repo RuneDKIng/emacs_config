@@ -42,4 +42,19 @@
 (setq auto-save-file-directory "~/.emacs.d/auto-save")
 (setq backup-directory-alist '((".*" . "~/.emacs.d/auto-backups")))
 
+(defun runei/wl-copy (text &optional _push)
+  "Copy TEXT to the Wayland clipboard."
+  (let ((process-connection-type nil))
+    (let ((proc (start-process "wl-copy" nil "wl-copy")))
+      (process-send-string proc text)
+      (process-send-eof proc))))
+
+(defun runei/wl-paste ()
+  "Paste from the Wayland clipboard."
+  (shell-command-to-string "wl-paste --no-newline"))
+
+(setq interprogram-cut-function #'runei/wl-copy)
+(setq interprogram-paste-function #'runei/wl-paste)
+(setq select-enable-clipboard t)
+
 (provide 'runei-core)

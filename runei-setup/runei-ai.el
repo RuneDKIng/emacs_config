@@ -16,8 +16,8 @@
 
 (setq gptel-default-mode 'org-mode)
 
-(global-set-key (kbd "C-c <return>") 'gptel-send)
-(global-set-key (kbd "C-c C-<return>") 'gptel-menu)
+(global-set-key (kbd "C-c RET") 'gptel-send)
+(global-set-key (kbd "C-c C-m") 'gptel-menu)
 
 (setq gptel-model "mistral-small"
 	  gptel-backend

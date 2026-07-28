@@ -6,7 +6,8 @@
   (magit-save-repository-buffers 'dontask))
 
 (require 'treesit)
-(setq major-mode-remap-alist '((python-mode . python-ts-mode)))
+;; Temporarily disabled to fix LSP - remap will be re-enabled after testing
+;; (setq major-mode-remap-alist '((python-mode . python-ts-mode)))
 
 (use-package zmq
   :straight (zmq :type git
@@ -78,5 +79,44 @@ Otherwise use the directory name."
 (doom-modeline-add-segment 'uv-env 'major-mode)
 
 (setq python-indent-offset 4)
+
+;; Setup LSP + pyright + company
+(use-package lsp-mode
+  :straight t
+  :demand t
+  :init (setq lsp-keymap-prefix "C-c l")
+  :hook ((python-mode . lsp)))
+
+(use-package lsp-pyright
+  :straight t
+  :demand t
+  :after lsp-mode
+  :config (require 'lsp-pyright))
+
+(use-package company
+  :straight t
+  :config
+  (global-company-mode)
+  (setq company-idle-delay 0.1
+		company-minimum-prefix-length 1))
+
+(defvar flymake-prefix-map (make-sparse-keymap "Flymake")
+  "Keymap for flymake commands under C-c ' prefix.")
+
+(global-set-key (kbd "C-c '") flymake-prefix-map)
+
+(define-key flymake-prefix-map (kbd "n") 'flymake-goto-next-error)
+(define-key flymake-prefix-map (kbd "p") 'flymake-goto-prev-error)
+(define-key flymake-prefix-map (kbd "e") 'flymake-show-buffer-diagnostics)
+(define-key flymake-prefix-map (kbd "t") 'flymake-mode)
+(define-key flymake-prefix-map (kbd "d")
+			(lambda () (interactive) (flymake-show-diagnostic (point))))
+
+(use-package devdocs
+  :straight t
+  :bind (("C-c d d" . devdocs-lookup)
+		 ("C-c d s" . devdocs-search))
+  :config
+  (setq devdocs-theme 'dark))
 
 (provide 'runei-programming)
